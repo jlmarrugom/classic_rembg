@@ -16,7 +16,7 @@ with st.sidebar.expander("Example URLs"):
 
 overlapping = st.sidebar.number_input("Overlapping:", min_value=0.0, max_value=1.0, value=0.3)
 c1, c2 = st.columns([2,3], gap="large")
-if img_url is not "":
+if img_url != "":
     
     img = download_image(img_url)
 
@@ -26,7 +26,6 @@ if img_url is not "":
         st.write("### Image Without White Background")
         st.image(png_image)
 
-    
     collage_maker = CollageMaker()
     collage = collage_maker.make_collage(png_image, overlapping ,num_repeats=2)
     with c2:
