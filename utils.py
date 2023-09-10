@@ -18,6 +18,7 @@ class BackgroundRemover:
     def remove_backgroung(self, opencvImage:np.ndarray)-> None:
         """Run the full background removal process"""
         gray_img = cv2.cvtColor(opencvImage, cv2.COLOR_BGR2GRAY)
+        opencvImage = cv2.add(opencvImage, 1)
 
         contours, cnt_border = self.find_contours(gray_img)
 
@@ -27,21 +28,22 @@ class BackgroundRemover:
 
         masked_img = self.crop_image_by_max_contours(masked_img, cnt_border)
 
-        png_img = self.make_black_pixels_transparent(masked_img)
+        png_img = self.make_pixels_transparent(masked_img, objective="black")
 
         return png_img
 
     @staticmethod
     def find_contours(gray_img):
         """Find the contours of the image"""
-        _, threshed = cv2.threshold(gray_img, 220, 255, cv2.THRESH_BINARY_INV)
+        _, threshed = cv2.threshold(gray_img, 230, 255, cv2.THRESH_BINARY_INV) #220
 
         ## (2) Morph-op to remove noise
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11,11))
-        morphed = cv2.morphologyEx(threshed, cv2.MORPH_CLOSE, kernel)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2,2)) #11,11
+        morphed = cv2.morphologyEx(threshed, cv2.MORPH_CLOSE, kernel, iterations=1)
 
         ## (3) Find the max-area contour
         contours = cv2.findContours(morphed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+
         cnt = sorted(contours, key=cv2.contourArea)[-1]
 
         return contours, cnt
@@ -63,17 +65,21 @@ class BackgroundRemover:
         return filled_boundary
     
     @staticmethod
-    def make_black_pixels_transparent(image_bgr:np.ndarray)->np.ndarray:
+    def make_pixels_transparent(image_bgr:np.ndarray, objective="white")->np.ndarray:
 
         # get the image dimensions (height, width and channels)
         h, w, c = image_bgr.shape
         # append Alpha channel -- required for BGRA (Blue, Green, Red, Alpha)
         image_bgra = np.concatenate([image_bgr, np.full((h, w, 1), 255, dtype=np.uint8)], axis=-1)
         # create a mask where white pixels ([255, 255, 255]) are True
-        #white = np.all(image_bgr == [255, 255, 255], axis=-1)
-        black = np.all(image_bgr == [0, 0, 0], axis=-1)
-        # change the values of Alpha to 0 for all the black pixels
-        image_bgra[black, -1] = 0
+        if objective=="white":
+            white = np.all(image_bgr == [255, 255, 255], axis=-1)
+            # change the values of Alpha to 0 for all the white pixels
+            image_bgra[white, -1] = 0
+        else:
+            black = np.all(image_bgr == [0, 0, 0], axis=-1)
+            # change the values of Alpha to 0 for all the black pixels
+            image_bgra[black, -1] = 0
 
         return image_bgra
 
