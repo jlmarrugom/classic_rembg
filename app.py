@@ -15,6 +15,8 @@ with st.sidebar.expander("Example URLs"):
         st.write(url)
 
 overlapping = st.sidebar.number_input("Overlapping:", min_value=0.0, max_value=1.0, value=0.3)
+nr = st.sidebar.number_input("Number of repeats:", min_value=2, max_value=6, value=2)
+
 c1, c2 = st.columns([2,3], gap="large")
 if img_url != "":
     
@@ -27,10 +29,10 @@ if img_url != "":
         st.image(png_image)
 
     collage_maker = CollageMaker()
-    collage = collage_maker.make_collage(png_image, overlapping ,num_repeats=2)
+    collage = collage_maker.make_collage(png_image, overlapping ,num_repeats=nr)
     with c2:
         st.write("### Collage")
-        st.image(remover.make_pixels_transparent(collage, objective="black"))
+        st.image(collage)
 
 else: st.sidebar.info("Input an URL first")
 

@@ -89,9 +89,15 @@ class CollageMaker:
 
         img_list = num_repeats*[img]
         padded_list = self.add_border_to_images(img_list, overlapping=overlapping)
-        collage = self.blend_two_images(front_img=padded_list[-1], back_image=padded_list[0])
+        # if right equals front:
+        current_collage = padded_list[-1]
+        for img in padded_list[::-1][1:]:
+            current_collage = self.blend_two_images(front_img=current_collage, back_image=img[:,:,:3])
+            bgrm = BackgroundRemover()
+            current_collage = bgrm.make_pixels_transparent(current_collage, objective="black")
+        #collage = self.blend_two_images(front_img=padded_list[-1], back_image=padded_list[0])
 
-        return collage
+        return current_collage
     
     @staticmethod
     def add_border_to_images(img_list, overlapping:float = 0.3):
