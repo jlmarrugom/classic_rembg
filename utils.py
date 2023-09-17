@@ -52,7 +52,7 @@ class BackgroundRemover:
     def crop_image_by_max_contours(image:np.ndarray, cnt:np.ndarray)->np.ndarray:
         """Crop Image by contours"""
         x,y,w,h = cv2.boundingRect(cnt)
-        minimal_border_img = image[y:y+h, x:x+w]
+        minimal_border_img = image[:, x:x+w] #y:y+h
 
         return minimal_border_img
 
@@ -101,6 +101,8 @@ class CollageMaker:
     @staticmethod
     def add_border_to_images(img_list:list, overlapping:float = 0.3)->list:
         """Pad the images in the list depending on the desired overlapping and their shapes"""
+
+        top_height = max([img.shape[0] for img in img_list])
         # add borders
         new_imgs = len(img_list)*[None]
         borderType=cv2.BORDER_CONSTANT
@@ -110,11 +112,13 @@ class CollageMaker:
                 [round(left_img.shape[1]-overlapping *img.shape[1]) for left_img in img_list[:i]]
                 )
             right_offset = sum(
-                [round((1-overlapping) *right_img.shape[1]) for right_img in img_list[i:]])
+                [round((1-overlapping) *right_img.shape[1]) for right_img in img_list[i+1:]])
+            
+            height_pad = round(top_height-img.shape[0])
 
             new_imgs[i] = cv2.copyMakeBorder(
                 img,
-                top= 0, 
+                top= height_pad, 
                 bottom=0,
                 left= left_offset,
                 right= right_offset,

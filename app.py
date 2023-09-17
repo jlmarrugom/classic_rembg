@@ -36,7 +36,7 @@ for i, (url, nr) in enumerate(zip(all_urls,all_nrs)):
         remover =  BackgroundRemover()
         png_image = remover.remove_backgroung(img)
         with cols[i]:
-            st.image(png_image)
+            st.image(png_image, width=130)
         
         png_images+= nr*[png_image]
 
