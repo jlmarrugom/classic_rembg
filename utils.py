@@ -101,18 +101,24 @@ class CollageMaker:
     @staticmethod
     def add_border_to_images(img_list:list, overlapping:float = 0.3)->list:
         """Pad the images in the list depending on the desired overlapping and their shapes"""
-        # function as a pair
-        x_offset=round((1-overlapping)*img_list[0].shape[1])
+        x_offset = round((1-overlapping) *img_list[0].shape[1])
         # add borders
         new_imgs = len(img_list)*[None]
         borderType=cv2.BORDER_CONSTANT
         for i, img in enumerate(img_list):
+            
+            # left_offset = sum(
+            #     [round(left_img.shape[1]-overlapping *img.shape[1]) for left_img in img_list[:i]]
+            #     )
+            # right_offset = sum(
+            #     [round((1-overlapping) *right_img.shape[1]) for right_img in img_list[i:]])
+
             new_imgs[i] = cv2.copyMakeBorder(
                 img,
                 top= 0, 
                 bottom=0,
-                left= i*x_offset, 
-                right=(len(img_list)-1-i)*x_offset,
+                left=i*x_offset, #left_offset,
+                right= (len(img_list)-1-i)*x_offset, #right_offset
                 borderType=borderType
                 )
 
