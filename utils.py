@@ -15,7 +15,7 @@ def download_image(url:str)->np.ndarray:
 class BackgroundRemover:
     """This is a wrapper class with Image preprocess methods"""
 
-    def remove_backgroung(self, opencvImage:np.ndarray)-> None:
+    def remove_backgroung(self, opencvImage:np.ndarray)-> np.ndarray:
         """Run the full background removal process"""
         gray_img = cv2.cvtColor(opencvImage, cv2.COLOR_BGR2GRAY)
         opencvImage = cv2.add(opencvImage, 1)
@@ -33,7 +33,7 @@ class BackgroundRemover:
         return png_img
 
     @staticmethod
-    def find_contours(gray_img):
+    def find_contours(gray_img:np.ndarray)->np.ndarray:
         """Find the contours of the image"""
         _, threshed = cv2.threshold(gray_img, 230, 255, cv2.THRESH_BINARY_INV) #220
 
@@ -49,15 +49,15 @@ class BackgroundRemover:
         return contours, cnt
     
     @staticmethod
-    def crop_image_by_max_contours(image, cnt):
-        ## (4) Crop and save it
+    def crop_image_by_max_contours(image:np.ndarray, cnt:np.ndarray)->np.ndarray:
+        """Crop Image by contours"""
         x,y,w,h = cv2.boundingRect(cnt)
         minimal_border_img = image[y:y+h, x:x+w]
 
         return minimal_border_img
 
     @staticmethod
-    def find_mask(gray_img, contours)->np.ndarray:
+    def find_mask(gray_img:np.ndarray, contours:np.ndarray)->np.ndarray:
         """Find an inclusive mask of the image with the countours then fills it"""
         tmp = np.zeros_like(gray_img)
         filled_boundary = cv2.drawContours(tmp, contours, -1, (255,255,255), thickness=cv2.FILLED)# with 1 just draw the countour
@@ -65,8 +65,8 @@ class BackgroundRemover:
         return filled_boundary
     
     @staticmethod
-    def make_pixels_transparent(image_bgr:np.ndarray, objective="white")->np.ndarray:
-
+    def make_pixels_transparent(image_bgr:np.ndarray, objective:str="white")->np.ndarray:
+        """Make the objective Pixels transparent by adding another channel"""
         # get the image dimensions (height, width and channels)
         h, w, c = image_bgr.shape
         # append Alpha channel -- required for BGRA (Blue, Green, Red, Alpha)
@@ -85,9 +85,8 @@ class BackgroundRemover:
 
 class CollageMaker:
 
-    def make_collage(self, img, overlapping=0.3, num_repeats=2):
-
-        img_list = num_repeats*[img]
+    def make_collage(self, img_list:list, overlapping:float=0.3)->np.ndarray:
+        """Make a collage with a list of images and the desired overlapping"""
         padded_list = self.add_border_to_images(img_list, overlapping=overlapping)
         # if right equals front:
         current_collage = padded_list[-1]
@@ -100,7 +99,8 @@ class CollageMaker:
         return current_collage
     
     @staticmethod
-    def add_border_to_images(img_list, overlapping:float = 0.3):
+    def add_border_to_images(img_list:list, overlapping:float = 0.3)->list:
+        """Pad the images in the list depending on the desired overlapping and their shapes"""
         # function as a pair
         x_offset=round((1-overlapping)*img_list[0].shape[1])
         # add borders
@@ -119,7 +119,8 @@ class CollageMaker:
         return new_imgs
     
     @staticmethod
-    def blend_two_images(front_img, back_image):
+    def blend_two_images(front_img:np.ndarray, back_image:np.ndarray)->np.ndarray:
+        """Put two images together, one in the front and one in the back"""
         # extract alpha channel from foreground image as mask and make 3 channels
         alpha = front_img[:,:,3]
         alpha = cv2.merge([alpha,alpha,alpha])

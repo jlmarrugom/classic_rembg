@@ -1,4 +1,5 @@
 import streamlit as st
+from time import time
 from utils import download_image, BackgroundRemover, CollageMaker
 
 st.title("Welcome to the RemBG app")
@@ -28,8 +29,9 @@ if img_url != "":
         st.write("### Image Without White Background")
         st.image(png_image)
 
+    png_images = nr*[png_image]
     collage_maker = CollageMaker()
-    collage = collage_maker.make_collage(png_image, overlapping ,num_repeats=nr)
+    collage = collage_maker.make_collage(png_images, overlapping)
     with c2:
         st.write("### Collage")
         st.image(collage)
